@@ -131,17 +131,17 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   const pool = getPool();
 
-  /* ===============================
-     STEP 1: Hash incoming token
-     =============================== */
+
+    //  STEP 1: Hash incoming token
+
   const hashedToken = crypto
     .createHash("sha256")
     .update(token)
     .digest("hex");
 
-  /* ===============================
-     STEP 2: Find valid token
-     =============================== */
+ 
+     // STEP 2: Find valid token
+
   const [users] = await pool.query(
     `SELECT userID
      FROM tbluser
@@ -155,14 +155,12 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid or expired reset token");
   }
 
-  /* ===============================
-     STEP 3: Hash new password
-     =============================== */
+  // STEP 3: Hash new password */
   const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-  /* ===============================
-     STEP 4: Update password + clear token
-     =============================== */
+
+     //STEP 4: Update password + clear token
+
   await pool.query(
     `UPDATE tbluser
      SET pass = ?, 
