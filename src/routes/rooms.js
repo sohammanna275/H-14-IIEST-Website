@@ -147,21 +147,26 @@ router.post("/allocate", async (req, res) => {
             }
             console.log("Allocating:", { studentID, floorID, roomID });
             // 1️ Get hostelRoomID
-            const [rooms] = await connection.query(
-                `
-        SELECT hostelRoomID
-        FROM tblhostelroom
-        WHERE floorNo = ? AND roomNo = ?
-        LIMIT 1
-        `,
-                [floorID, roomID]
-            );
+            //     const [rooms] = await connection.query(
+            //         `
+            // SELECT hostelRoomID
+            // FROM tblhostelroom
+            // WHERE floorNo = ? AND roomNo = ?
+            // LIMIT 1
+            // `,
+            //         [floorID, roomID]
+            //     );
 
-            if (rooms.length === 0) {
-                throw new Error(`Room ${roomID} on floor ${floorID} not found`);
+            //     if (rooms.length === 0) {
+            //         throw new Error(`Room ${roomID} on floor ${floorID} not found`);
+            //     }
+
+            //     const hostelRoomID = rooms[0].hostelRoomID;
+            const hostelRoomID = Number(alloc.roomID);
+
+            if (!studentID || !hostelRoomID) {
+                throw new Error("studentID and hostelRoomID are required");
             }
-
-            const hostelRoomID = rooms[0].hostelRoomID;
 
             // 2️ Check existing allocation
             const [existing] = await connection.query(
