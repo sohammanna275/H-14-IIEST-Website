@@ -46,29 +46,63 @@ const mailGenerator = new Mailgen({
 });
 
 // Function to send email
-export const sendEmail = async (to, subject, resetLink) => {
-    const email = {
-        body: {
-            name: "User",
-            intro: "You requested a password reset for your Hostel-14 account.",
-            action: {
-                instructions:
-                    "Click the button below to reset your password. This link will expire in 15 minutes.",
-                button: {
-                    color: "#22BC66",
-                    text: "Reset Password",
-                    link: resetLink,
-                },
-            },
-            outro: "If you did not request this, you can safely ignore this email.",
-        },
-    };
-    const emailBody = mailGenerator.generate(email)
+// export const sendEmail = async (to, subject, resetLink) => {
+//     const email = {
+//         body: {
+//             name: "User",
+//             intro: "You requested a password reset for your Hostel-14 account.",
+//             action: {
+//                 instructions:
+//                     "Click the button below to reset your password. This link will expire in 15 minutes.",
+//                 button: {
+//                     color: "#22BC66",
+//                     text: "Reset Password",
+//                     link: resetLink,
+//                 },
+//             },
+//             outro: "If you did not request this, you can safely ignore this email.",
+//         },
+//     };
+//     const emailBody = mailGenerator.generate(email)
 
-    await transporter.sendMail({
-        from: `"Hostel-14" <${process.env.EMAIL_USER}>`,
-        to,
-        subject,
-        html: emailBody,
-    });
+//     await transporter.sendMail({
+//         from: `"Hostel-14" <${process.env.EMAIL_USER}>`,
+//         to,
+//         subject,
+//         html: emailBody,
+//     });
+// };
+export const sendEmail = async (to, subject, resetLink) => {
+    try {
+        const email = {
+            body: {
+                name: "User",
+                intro: "You requested a password reset for your Hostel-14 account.",
+                action: {
+                    instructions:
+                        "Click the button below to reset your password. This link will expire in 15 minutes.",
+                    button: {
+                        color: "#22BC66",
+                        text: "Reset Password",
+                        link: resetLink,
+                    },
+                },
+                outro: "If you did not request this, you can safely ignore this email.",
+            },
+        };
+
+        const emailBody = mailGenerator.generate(email);
+
+        const info = await transporter.sendMail({
+            from: `"Hostel-14" <${process.env.EMAIL_USER}>`,
+            to,
+            subject,
+            html: emailBody,
+        });
+
+        console.log("📧 Email sent:", info.messageId);
+    } catch (err) {
+        console.error("❌ Email send failed:", err);
+        throw err; // VERY IMPORTANT
+    }
 };
