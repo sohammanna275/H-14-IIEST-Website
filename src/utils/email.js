@@ -41,7 +41,7 @@ const mailGenerator = new Mailgen({
     theme: "salted",
     product: {
         name: "Hostel-14 Management System",
-        link: process.env.APP_URL || "http://localhost:5173",
+        link: process.env.APP_URL
     },
 });
 

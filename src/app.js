@@ -39,8 +39,8 @@ app.use("/api/leave", leaveRoutes);
 app.get("/students-list", async (req, res) => {
     try {
         const pool = getPool();
-        const [rows] = await pool.query('CALL GetStudentList()');
-        res.json(rows[0]);
+        const [rows] = await pool.query("SELECT * FROM tblstudent");
+        res.json(rows);
     } catch(err) {
         res.status(500).json({ error: err.message });
     }
