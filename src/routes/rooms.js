@@ -138,13 +138,15 @@ router.post("/allocate", async (req, res) => {
         await connection.beginTransaction();
 
         for (const alloc of allocations) {
-            const { studentID, floorID, roomID } = alloc;
+            const studentID = Number(alloc.studentID);
+            const floorID = Number(alloc.floorID);
+            const roomID = Number(alloc.roomID);
 
             if (!studentID || !floorID || !roomID) {
-                throw new Error("studentID, floorID and roomID are required");
+                throw new Error("studentID, floorID and roomID are required and must be numbers");
             }
-
-            // 1️⃣ Get hostelRoomID
+            console.log("Allocating:", { studentID, floorID, roomID });
+            // 1️ Get hostelRoomID
             const [rooms] = await connection.query(
                 `
         SELECT hostelRoomID
@@ -161,7 +163,7 @@ router.post("/allocate", async (req, res) => {
 
             const hostelRoomID = rooms[0].hostelRoomID;
 
-            // 2️⃣ Check existing allocation
+            // 2️ Check existing allocation
             const [existing] = await connection.query(
                 "SELECT 1 FROM tblstudentroom WHERE studentID = ?",
                 [studentID]
