@@ -19,9 +19,13 @@ const applyLeave = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Student record not found");
     }
     const studentID = students[0].studentID;
+    // await pool.query(
+    //     "CALL SaveLeaveRegister(?, ?, ?, ?, ?)",
+    //     [0, studentID, startDate, endDate, reason]
+    // );
     await pool.query(
-        "CALL SaveLeaveRegister(?, ?, ?, ?, ?)",
-        [0, studentID, startDate, endDate, reason]
+        "INSERT INTO leaveregister (studentID, startDate, endDate, reason) VALUES (?, ?, ?, ?)",
+        [studentID, startDate, endDate, reason]
     );
     res.status(201).json({
         success: true,
