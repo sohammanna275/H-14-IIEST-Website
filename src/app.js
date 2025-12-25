@@ -13,19 +13,19 @@ import leaveRoutes from "./routes/leave.routes.js";
 
 
 // cors configuration
-app.use(
-  cors({
-    // origin: process.env.CORS_ORIGIN?.split(",") || "http://localhost:5173",
-    origin: [
-      "http://localhost:5173",
-      "https://hostel-14.vercel.app"
-    ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
-app.options("*", cors());
+const corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "https://hostel-14.vercel.app",
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // preflight uses same config
+
 // basic configs
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
