@@ -1,108 +1,60 @@
 import dotenv from "dotenv";
 import path from "path";
-
-import nodemailer from "nodemailer";
 import Mailgen from "mailgen";
+import SibApiV3Sdk from "sib-api-v3-sdk";
+
 dotenv.config({ path: path.resolve(process.cwd(), "./.env") });
-// Nodemailer transporter using Gmail service
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.EMAIL_USER,   // Gmail sender
-//     pass: process.env.EMAIL_PASS,   // App Password
-//   },
-// });
-// const transporter = nodemailer.createTransport({
-//   host: "smtp.gmail.com",   // Gmail SMTP host
-//   port: 465,                // TLS/STARTTLS
-//   secure: true,            // false for TLS
-//   auth: {
-//     user: process.env.EMAIL_USER,  // Gmail sender
-//     pass: process.env.EMAIL_PASS,  // App Password
-//   },
-// });
 
-console.log("Nodemailer auth:", {
-  user: process.env.EMAIL_USER,
-  pass: process.env.EMAIL_PASS ? "loaded" : "missing",
-});
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user:process.env.EMAIL_USER,
-        pass:process.env.EMAIL_PASS
-    },
-});
-
-// Mailgen config
+// Mailgen config (keep your existing setup)
 const mailGenerator = new Mailgen({
-    theme: "salted",
-    product: {
-        name: "Hostel-14 Management System",
-        link: process.env.APP_URL
-    },
+  theme: "salted",
+  product: {
+    name: "Hostel-14 Management System",
+    link: process.env.APP_URL,
+  },
 });
 
-// Function to send email
-// export const sendEmail = async (to, subject, resetLink) => {
-//     const email = {
-//         body: {
-//             name: "User",
-//             intro: "You requested a password reset for your Hostel-14 account.",
-//             action: {
-//                 instructions:
-//                     "Click the button below to reset your password. This link will expire in 15 minutes.",
-//                 button: {
-//                     color: "#22BC66",
-//                     text: "Reset Password",
-//                     link: resetLink,
-//                 },
-//             },
-//             outro: "If you did not request this, you can safely ignore this email.",
-//         },
-//     };
-//     const emailBody = mailGenerator.generate(email)
+// Brevo client setup
+const client = SibApiV3Sdk.ApiClient.instance;
+const apiKey = client.authentications["api-key"];
+apiKey.apiKey = process.env.BREVO_API_KEY; // ← use your Brevo API key
 
-//     await transporter.sendMail({
-//         from: `"Hostel-14" <${process.env.EMAIL_USER}>`,
-//         to,
-//         subject,
-//         html: emailBody,
-//     });
-// };
+const transactionalEmailsApi = new SibApiV3Sdk.TransactionalEmailsApi();
+
+// Send email function
 export const sendEmail = async (to, subject, resetLink) => {
-    try {
-        const email = {
-            body: {
-                name: "User",
-                intro: "You requested a password reset for your Hostel-14 account.",
-                action: {
-                    instructions:
-                        "Click the button below to reset your password. This link will expire in 15 minutes.",
-                    button: {
-                        color: "#22BC66",
-                        text: "Reset Password",
-                        link: resetLink,
-                    },
-                },
-                outro: "If you did not request this, you can safely ignore this email.",
-            },
-        };
+  try {
+    // Build email content using Mailgen
+    const email = {
+      body: {
+        name: "User",
+        intro: "You requested a password reset for your Hostel-14 account.",
+        action: {
+          instructions:
+            "Click the button below to reset your password. This link will expire in 15 minutes.",
+          button: {
+            color: "#22BC66",
+            text: "Reset Password",
+            link: resetLink,
+          },
+        },
+        outro: "If you did not request this, you can safely ignore this email.",
+      },
+    };
 
-        const emailBody = mailGenerator.generate(email);
+    const emailBody = mailGenerator.generate(email);
 
-        const info = await transporter.sendMail({
-            from: `"Hostel-14" <${process.env.EMAIL_USER}>`,
-            to,
-            subject,
-            html: emailBody,
-        });
+    // Send email via Brevo
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    sendSmtpEmail.sender = { name: "Hostel-14", email: "hostel14.staff@gmail.com" }; // must be verified in Brevo
+    sendSmtpEmail.to = [{ email: to }];
+    sendSmtpEmail.subject = subject;
+    sendSmtpEmail.htmlContent = emailBody;
 
-        console.log("📧 Email sent:", info.messageId);
-    } catch (err) {
-        console.error("❌ Email send failed:", err);
-        throw err; // VERY IMPORTANT
-    }
+    const info = await transactionalEmailsApi.sendTransacEmail(sendSmtpEmail);
+    console.log("📧 Email sent via Brevo:", info);
+  } catch (err) {
+    console.error("❌ Email send failed:", err.message);
+    throw err; // important for your controller to catch
+  }
 };
