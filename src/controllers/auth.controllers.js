@@ -107,7 +107,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     }
     const pool = getPool();
     const [users] = await pool.query(
-        "SELECT userID from tbluser where email = ? AND isActive = 1",
+        "SELECT userID FROM tbluser WHERE email = ? AND isActive = 1",
         [email]
     );
     if (users.length === 0) {
@@ -125,8 +125,12 @@ const forgotPassword = asyncHandler(async (req, res) => {
         WHERE email = ?`,
         [hashedToken, resetTokenExpiry, email]
     );
+    try {
     const resetLink = `${process.env.APP_URL}/reset-password/${resetToken}`;
     await sendEmail(email, "Reset Your Hostel-14 Password", resetLink);
+    } catch(err){
+        console.error("Email sending failed:", err.message);
+    }
     res.json({
         message: "If the email exists, a reset link has been sent",
     });
