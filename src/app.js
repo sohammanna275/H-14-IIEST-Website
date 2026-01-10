@@ -8,7 +8,8 @@ import departmentRoutes from "./routes/departments.js";
 import roomsRoutes from "./routes/rooms.js";
 import authRoutes from "./routes/auth.routes.js";
 import leaveRoutes from "./routes/leave.routes.js";
-
+import playersRoutes from "./routes/fclplayers.js";
+import fclDepartmentRoutes from "./routes/fcldepartments.js"
 // await connectDB();
 
 
@@ -35,6 +36,9 @@ app.use("/api/rooms", roomsRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/leave", leaveRoutes);
+app.use("/api/players", playersRoutes);
+app.use("/api/fcl-departments", fclDepartmentRoutes);
+
 
 app.get("/students-list", async (req, res) => {
     try {
