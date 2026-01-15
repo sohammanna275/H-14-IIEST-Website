@@ -10,6 +10,7 @@ import authRoutes from "./routes/auth.routes.js";
 import leaveRoutes from "./routes/leave.routes.js";
 import playersRoutes from "./routes/fclplayers.js";
 import fclDepartmentRoutes from "./routes/fcldepartments.js"
+import matchScoreRoutes from "./routes/matchScore.js"
 // await connectDB();
 
 
@@ -38,7 +39,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/players", playersRoutes);
 app.use("/api/fcl-departments", fclDepartmentRoutes);
-
+app.use("/api/match-score", matchScoreRoutes);
 
 app.get("/students-list", async (req, res) => {
     try {

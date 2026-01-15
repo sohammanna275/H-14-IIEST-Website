@@ -1,32 +1,87 @@
-// import dotenv from "dotenv";
-// dotenv.config({ path: "./.env" }); 
-// console.log("ENV CHECK:", {
-//   EMAIL_HOST: process.env.EMAIL_HOST,
-//   EMAIL_PORT: process.env.EMAIL_PORT,
-//   EMAIL_USER: process.env.EMAIL_USER
-// });
-// console.log("EMAIL_USER:", process.env.EMAIL_USER);
-// console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "loaded" : "undefined");
-// console.log("EMAIL_FROM:", process.env.EMAIL_FROM);
+// // import dotenv from "dotenv";
+// // dotenv.config({ path: "./.env" }); 
+// // console.log("ENV CHECK:", {
+// //   EMAIL_HOST: process.env.EMAIL_HOST,
+// //   EMAIL_PORT: process.env.EMAIL_PORT,
+// //   EMAIL_USER: process.env.EMAIL_USER
+// // });
+// // console.log("EMAIL_USER:", process.env.EMAIL_USER);
+// // console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "loaded" : "undefined");
+// // console.log("EMAIL_FROM:", process.env.EMAIL_FROM);
 
+// import dotenv from "dotenv";
+// import path from "path";
+// import { fileURLToPath } from "url";
+// // console.log("EMAIL_USER:", process.env.EMAIL_USER);
+// // console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "loaded" : "missing");
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+// dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
+// import app from "./app.js";
+// import { connectDB } from "./db/connect.js";
+// import { testConnection } from "./db/sequelize.js";
+// const port = process.env.PORT || 8000;
+// testConnection();
+// connectDB()
+//   .then(() => {
+//     app.listen(port, () => {
+//       console.log(`✅ Server running on port ${port}`);
+//     });
+//   })
+//   .catch((err) => {
+//     console.error("❌ MySQL connection error:", err);
+//     process.exit(1);
+//   });
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-// console.log("EMAIL_USER:", process.env.EMAIL_USER);
-// console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "loaded" : "missing");
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
-
 import app from "./app.js";
 import { connectDB } from "./db/connect.js";
 import { testConnection } from "./db/sequelize.js";
+import { createServer } from "http";
+import { Server } from "socket.io";
+
+dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env") });
+
 const port = process.env.PORT || 8000;
+
+// Test DB connection
 testConnection();
+
+// Create HTTP server from Express app
+const httpServer = createServer(app);
+
+// Attach Socket.IO
+const io = new Server(httpServer, {
+  cors: {
+    origin: [
+      "http://localhost:5173",
+      "https://hostel-14.vercel.app"
+    ],
+    methods: ["GET", "POST"]
+  }
+});
+
+// Socket.IO connections
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("join_match", (matchID) => {
+    socket.join(`match_${matchID}`);
+    console.log(`User ${socket.id} joined match_${matchID}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+
 connectDB()
   .then(() => {
-    app.listen(port, () => {
+    httpServer.listen(port, () => {
       console.log(`✅ Server running on port ${port}`);
     });
   })
@@ -34,3 +89,5 @@ connectDB()
     console.error("❌ MySQL connection error:", err);
     process.exit(1);
   });
+
+export { io };
