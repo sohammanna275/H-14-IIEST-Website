@@ -11,7 +11,7 @@ router.get("/matches", async (req, res) => {
             SELECT m.matchID, m.status, m.startTime,
                 d1.deptName AS teamAName,
                 d2.deptName AS teamBName,
-                s.scoreA, s.scoreB, s.wicketsA, s.wicketsB, s.overs
+                s.scoreA, s.scoreB, s.wicketsA, s.wicketsB, s.oversA, s.oversB
             FROM matches m 
             JOIN fclTblDept d1 on m.teamA =  d1.deptID
             JOIN fclTblDept d2 on m.teamB  = d2.deptID
@@ -59,7 +59,7 @@ router.get("/matches", async (req, res) => {
 //     }
 // });
 router.post("/update-score", async (req, res) => {
-  const { matchID, scoreA, scoreB, wicketsA, wicketsB, overs } = req.body;
+  const { matchID, scoreA, scoreB, wicketsA, wicketsB, oversA, oversB } = req.body;
 
   if (!matchID) {
     return res.status(400).json({
@@ -72,16 +72,17 @@ router.post("/update-score", async (req, res) => {
     const pool = getPool();
 
     await pool.query(
-      `INSERT INTO matchScore (matchID, scoreA, scoreB, wicketsA, wicketsB, overs)
-       VALUES (?, ?, ?, ?, ?, ?)
+      `INSERT INTO matchScore (matchID, scoreA, scoreB, wicketsA, wicketsB, oversA, oversB)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          scoreA = VALUES(scoreA),
          scoreB = VALUES(scoreB),
          wicketsA = VALUES(wicketsA),
          wicketsB = VALUES(wicketsB),
-         overs = VALUES(overs)
+         oversA = VALUES(oversA),
+         oversB = VALUES(oversB)
       `,
-      [matchID, scoreA, scoreB, wicketsA, wicketsB, overs]
+      [matchID, scoreA, scoreB, wicketsA, wicketsB, oversA, oversB]
     );
 
     await pool.query(
@@ -95,7 +96,8 @@ router.post("/update-score", async (req, res) => {
       scoreB,
       wicketsA,
       wicketsB,
-      overs,
+      oversA,
+      oversB,
       updatedAt: new Date()
     });
 
